@@ -1,5 +1,5 @@
 // 水平评估API
-module.exports = (req, res) => {
+export default function handler(req, res) {
   try {
     // 设置CORS头
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -13,20 +13,34 @@ module.exports = (req, res) => {
       return;
     }
     
-    // 确保是POST请求
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: '只支持POST请求' });
+    // 支持GET和POST请求
+    let words = [];
+    
+    if (req.method === 'GET') {
+      console.log('收到GET请求');
+      // 从查询参数中获取数据
+      if (req.query.data) {
+        try {
+          const data = JSON.parse(decodeURIComponent(req.query.data));
+          words = data.words || [];
+        } catch (e) {
+          console.error('解析GET参数失败:', e);
+        }
+      }
+    } else if (req.method === 'POST') {
+      console.log('收到POST请求');
+      // 从请求体中获取数据
+      words = req.body?.words || [];
+    } else {
+      return res.status(405).json({ error: '不支持的请求方法' });
     }
     
     // 添加调试日志
     console.log('收到水平评估API请求');
-    console.log('请求体:', req.body);
+    console.log('处理的单词:', words);
     
-    // 获取请求体中的数据
-    const { words } = req.body;
-    
-    if (!words || !Array.isArray(words)) {
-      console.log('请求参数错误:', req.body);
+    if (!Array.isArray(words) || words.length === 0) {
+      console.log('请求参数错误或单词列表为空');
       return res.status(400).json({ error: '缺少必要参数或格式不正确' });
     }
     
@@ -123,4 +137,4 @@ module.exports = (req, res) => {
     console.error('评估水平时出错:', error);
     res.status(500).json({ error: '服务器内部错误', message: error.message });
   }
-};
+}
