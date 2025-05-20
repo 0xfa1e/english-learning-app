@@ -1,7 +1,7 @@
 // 水平评估API
 module.exports = (req, res) => {
   try {
-    // 允许跨域请求
+    // 设置CORS头
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -18,10 +18,15 @@ module.exports = (req, res) => {
       return res.status(405).json({ error: '只支持POST请求' });
     }
     
+    // 添加调试日志
+    console.log('收到水平评估API请求');
+    console.log('请求体:', req.body);
+    
     // 获取请求体中的数据
     const { words } = req.body;
     
     if (!words || !Array.isArray(words)) {
+      console.log('请求参数错误:', req.body);
       return res.status(400).json({ error: '缺少必要参数或格式不正确' });
     }
     
@@ -65,6 +70,8 @@ module.exports = (req, res) => {
       levelCounts[level]++;
     });
     
+    console.log('单词级别统计:', levelCounts);
+    
     // 确定用户主要级别
     let userLevel = "A1"; // 默认级别
     
@@ -99,16 +106,21 @@ module.exports = (req, res) => {
     
     const vocabEstimate = cefrVocabEstimates[userLevel];
     
-    // 返回评估结果
-    res.status(200).json({
+    // 构建响应结果
+    const result = {
       cefrLevel: userLevel,
       progressPercentage: progressPercentage,
       vocabEstimate: vocabEstimate,
       levelCounts: levelCounts
-    });
+    };
+    
+    console.log('返回评估结果:', result);
+    
+    // 返回评估结果
+    res.status(200).json(result);
     
   } catch (error) {
     console.error('评估水平时出错:', error);
-    res.status(500).json({ error: '服务器内部错误' });
+    res.status(500).json({ error: '服务器内部错误', message: error.message });
   }
 };

@@ -167,6 +167,9 @@ async function processWords(words) {
     
     // API调用
     try {
+        console.log('正在调用API:', '/api/assess-level');
+        console.log('发送数据:', { words });
+        
         // 调用水平评估API
         const response = await fetch('/api/assess-level', {
             method: 'POST',
@@ -174,13 +177,19 @@ async function processWords(words) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ words }),
+            // 添加这些选项以确保正确处理跨域请求
+            mode: 'cors',
+            credentials: 'same-origin'
         });
         
         if (!response.ok) {
-            throw new Error('水平评估API请求失败');
+            const errorText = await response.text();
+            console.error('API响应错误:', response.status, errorText);
+            throw new Error(`API请求失败: ${response.status} ${errorText}`);
         }
         
         const levelResult = await response.json();
+        console.log('API响应成功:', levelResult);
         
         // 显示水平评估结果
         displayLevelResult(levelResult);
@@ -191,15 +200,18 @@ async function processWords(words) {
         console.error('处理单词时出错:', error);
         alert('评估水平时出错，请重试');
         
-        // 如果API调用失败，回退到本地评估
-        const levelResult = {
-            cefrLevel: "A2",
-            progressPercentage: 33.3,
-            vocabEstimate: 1000
+        // 如果API调用失败，使用更智能的回退逻辑
+        if (!window.userWords && words && words.length > 0) {
+            window.userWords = words;
+        }
+        
+        const fallbackLevelResult = {
+            cefrLevel: words.length > 10 ? "B1" : "A2",
+            progressPercentage: words.length > 10 ? 50 : 33.3,
+            vocabEstimate: words.length * 100 + 500
         };
         
-        displayLevelResult(levelResult);
-        window.userWords = words;
+        displayLevelResult(fallbackLevelResult);
     }
 }
 
@@ -250,6 +262,9 @@ async function generateArticle() {
     
     // API调用
     try {
+        console.log('正在调用API:', '/api/generate-article');
+        console.log('发送数据:', { words: window.userWords, level: cefrLevel });
+        
         // 调用文章生成API
         const response = await fetch('/api/generate-article', {
             method: 'POST',
@@ -260,13 +275,19 @@ async function generateArticle() {
                 words: window.userWords,
                 level: cefrLevel
             }),
+            // 添加这些选项以确保正确处理跨域请求
+            mode: 'cors',
+            credentials: 'same-origin'
         });
         
         if (!response.ok) {
-            throw new Error('文章生成API请求失败');
+            const errorText = await response.text();
+            console.error('API响应错误:', response.status, errorText);
+            throw new Error(`API请求失败: ${response.status} ${errorText}`);
         }
         
         const article = await response.json();
+        console.log('API响应成功:', article);
         
         // 显示生成的文章
         displayArticle(article);
@@ -274,14 +295,14 @@ async function generateArticle() {
         console.error('生成文章时出错:', error);
         alert('生成文章时出错，请重试');
         
-        // 如果API调用失败，回退到本地生成
-        const article = {
-            content: "This is a sample article containing your words. " +
-                     "It's generated locally because the API call failed. " +
-                     "Please try again later."
+        // 如果API调用失败，生成一个简单的文章
+        const simpleArticle = {
+            content: `Here is a simple article about ${window.userWords.join(', ')}. ` +
+                     `These words are important for learning English at the ${cefrLevel} level. ` +
+                     `Practice using these words in sentences to improve your vocabulary.`
         };
         
-        displayArticle(article);
+        displayArticle(simpleArticle);
     }
 }
 

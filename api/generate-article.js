@@ -1,7 +1,7 @@
 // 文章生成API
 module.exports = (req, res) => {
   try {
-    // 允许跨域请求
+    // 设置CORS头
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -18,10 +18,15 @@ module.exports = (req, res) => {
       return res.status(405).json({ error: '只支持POST请求' });
     }
     
+    // 添加调试日志
+    console.log('收到文章生成API请求');
+    console.log('请求体:', req.body);
+    
     // 获取请求体中的数据
     const { words, level } = req.body;
     
     if (!words || !level) {
+      console.log('请求参数错误:', req.body);
       return res.status(400).json({ error: '缺少必要参数' });
     }
     
@@ -66,8 +71,8 @@ module.exports = (req, res) => {
     
     // 添加用户的单词
     replacements.word1 = words[0] || "example";
-    replacements.word2 = words[1] || "practice";
-    replacements.word3 = words[2] || "learning";
+    replacements.word2 = words.length > 1 ? words[1] : "practice";
+    replacements.word3 = words.length > 2 ? words[2] : "learning";
     
     // 添加其他替换词
     Object.keys(replacementWords).forEach(category => {
@@ -82,11 +87,16 @@ module.exports = (req, res) => {
       content = content.replace(regex, replacements[key]);
     });
     
+    // 构建响应结果
+    const result = { content };
+    
+    console.log('返回生成的文章:', result);
+    
     // 返回生成的文章
-    res.status(200).json({ content });
+    res.status(200).json(result);
     
   } catch (error) {
     console.error('生成文章时出错:', error);
-    res.status(500).json({ error: '服务器内部错误' });
+    res.status(500).json({ error: '服务器内部错误', message: error.message });
   }
 };
