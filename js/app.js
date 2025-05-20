@@ -146,6 +146,26 @@ function initButtonEvents() {
 async function processWords(words) {
     console.log('处理单词列表:', words);
     
+    // 检查是否在本地环境（通过检查URL判断）
+    const isLocalEnvironment = window.location.hostname === 'localhost' || 
+                              window.location.hostname === '127.0.0.1';
+    
+    if (isLocalEnvironment) {
+        // 本地环境，使用本地函数
+        try {
+            // 确保assessLevel函数可用
+            if (typeof assessLevel === 'function') {
+                const levelResult = assessLevel(words);
+                displayLevelResult(levelResult);
+                window.userWords = words;
+                return;
+            }
+        } catch (e) {
+            console.error('本地函数调用失败，尝试API调用', e);
+        }
+    }
+    
+    // API调用
     try {
         // 调用水平评估API
         const response = await fetch('/api/assess-level', {
@@ -210,6 +230,25 @@ async function generateArticle() {
     // 获取用户水平
     const cefrLevel = document.getElementById('cefr-level').textContent;
     
+    // 检查是否在本地环境（通过检查URL判断）
+    const isLocalEnvironment = window.location.hostname === 'localhost' || 
+                              window.location.hostname === '127.0.0.1';
+    
+    if (isLocalEnvironment) {
+        // 本地环境，使用本地函数
+        try {
+            // 确保generateArticleContent函数可用
+            if (typeof generateArticleContent === 'function') {
+                const article = generateArticleContent(window.userWords, cefrLevel);
+                displayArticle(article);
+                return;
+            }
+        } catch (e) {
+            console.error('本地函数调用失败，尝试API调用', e);
+        }
+    }
+    
+    // API调用
     try {
         // 调用文章生成API
         const response = await fetch('/api/generate-article', {
