@@ -2,11 +2,12 @@
   "name": "english-learning-app",
   "version": "1.0.0",
   "description": "英语学习助手应用",
-  "main": "index.html",
+  "main": "index.js",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'No build step required'",
-    "start": "vercel dev"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "keywords": [
     "english",
@@ -17,9 +18,13 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "tesseract.js": "^2.1.0"
   },
   "devDependencies": {
-    "vercel": "^32.0.0"
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.0.0"
   }
 }
