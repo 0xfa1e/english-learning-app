@@ -2,7 +2,7 @@
 export default function Home() {
   // 如果在服务器端渲染，不执行重定向
   if (typeof window !== 'undefined') {
-    window.location.href = '/index.html';
+    window.location.href = '/public/index.html';
   }
   
   return (
