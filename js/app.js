@@ -143,17 +143,44 @@ function initButtonEvents() {
 }
 
 // 处理单词列表
-function processWords(words) {
+async function processWords(words) {
     console.log('处理单词列表:', words);
     
-    // 调用水平评估模块
-    const levelResult = assessLevel(words);
-    
-    // 显示水平评估结果
-    displayLevelResult(levelResult);
-    
-    // 存储单词列表供后续使用
-    window.userWords = words;
+    try {
+        // 调用水平评估API
+        const response = await fetch('/api/assess-level', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ words }),
+        });
+        
+        if (!response.ok) {
+            throw new Error('水平评估API请求失败');
+        }
+        
+        const levelResult = await response.json();
+        
+        // 显示水平评估结果
+        displayLevelResult(levelResult);
+        
+        // 存储单词列表供后续使用
+        window.userWords = words;
+    } catch (error) {
+        console.error('处理单词时出错:', error);
+        alert('评估水平时出错，请重试');
+        
+        // 如果API调用失败，回退到本地评估
+        const levelResult = {
+            cefrLevel: "A2",
+            progressPercentage: 33.3,
+            vocabEstimate: 1000
+        };
+        
+        displayLevelResult(levelResult);
+        window.userWords = words;
+    }
 }
 
 // 显示水平评估结果
@@ -174,7 +201,7 @@ function displayLevelResult(levelResult) {
 }
 
 // 生成文章
-function generateArticle() {
+async function generateArticle() {
     if (!window.userWords || window.userWords.length === 0) {
         alert('没有可用的单词列表');
         return;
@@ -183,11 +210,40 @@ function generateArticle() {
     // 获取用户水平
     const cefrLevel = document.getElementById('cefr-level').textContent;
     
-    // 调用文章生成模块
-    const article = generateArticleContent(window.userWords, cefrLevel);
-    
-    // 显示生成的文章
-    displayArticle(article);
+    try {
+        // 调用文章生成API
+        const response = await fetch('/api/generate-article', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                words: window.userWords,
+                level: cefrLevel
+            }),
+        });
+        
+        if (!response.ok) {
+            throw new Error('文章生成API请求失败');
+        }
+        
+        const article = await response.json();
+        
+        // 显示生成的文章
+        displayArticle(article);
+    } catch (error) {
+        console.error('生成文章时出错:', error);
+        alert('生成文章时出错，请重试');
+        
+        // 如果API调用失败，回退到本地生成
+        const article = {
+            content: "This is a sample article containing your words. " +
+                     "It's generated locally because the API call failed. " +
+                     "Please try again later."
+        };
+        
+        displayArticle(article);
+    }
 }
 
 // 显示生成的文章
