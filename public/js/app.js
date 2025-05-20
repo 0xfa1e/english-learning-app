@@ -1,3 +1,13 @@
+// 确保关键函数可以全局访问
+window.initApp = initApp;
+window.processWords = processWords;
+window.displayLevelResult = displayLevelResult;
+window.generateArticle = generateArticle;
+window.displayArticle = displayArticle;
+window.highlightWords = highlightWords;
+window.assessLevel = assessLevel;
+window.generateArticleContent = generateArticleContent;
+
 // 主应用逻辑
 document.addEventListener('DOMContentLoaded', function() {
     // 初始化应用
@@ -5,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initApp() {
+    console.log('初始化应用...');
     // 初始化标签页切换
     initTabs();
     
@@ -30,17 +41,23 @@ function initTabs() {
 }
 
 function initButtonEvents() {
+    console.log('初始化按钮事件...');
     // 文本输入处理
     const processTextBtn = document.getElementById('process-text-btn');
     if (processTextBtn) {
+        console.log('找到分析单词按钮，添加点击事件');
         processTextBtn.addEventListener('click', function() {
+            console.log('分析单词按钮被点击');
             const wordInput = document.getElementById('word-input').value.trim();
             if (wordInput) {
+                console.log('处理单词:', wordInput);
                 processWords(wordInput.split(/[\n\s,]+/).filter(word => word));
             } else {
                 alert('请输入至少一个单词');
             }
         });
+    } else {
+        console.error('未找到分析单词按钮');
     }
     
     // 拍照按钮

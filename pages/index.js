@@ -33,13 +33,25 @@ export default function Home() {
           '/js/levelAssessor.js',
           '/js/articleGenerator.js',
           '/js/speechHandler.js',
-          '/js/pronunciationEvaluator.js'
+          '/js/pronunciationEvaluator.js',
+          '/js/init.js'  // 添加初始化脚本
         ];
         
         for (const src of scripts) {
           const script = document.createElement('script');
           script.src = src;
-          document.body.appendChild(script);
+          await new Promise(resolve => {
+            script.onload = resolve;
+            document.body.appendChild(script);
+          });
+        }
+        
+        // 手动初始化应用
+        if (typeof window.initApp === 'function') {
+          console.log('调用initApp函数');
+          window.initApp();
+        } else {
+          console.error('initApp函数未找到，可能脚本未正确加载');
         }
       } catch (error) {
         console.error('加载脚本时出错:', error);
